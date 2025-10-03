@@ -1,0 +1,238 @@
+# prompt: write a program that accepts 256 different sets of RGB values and assigns the color generated to box and arrange the 
+#boxes in a 16x16 grid in the same order as that of the rgb value order starting from top- left first moving from left to right 
+#within a row then moving to the next row. accept rgb values as actual values and not between 0 to 1. don't use anything that requires 
+#values to be converted to 0-1 scale
+
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+from PIL import Image
+import numpy as np
+
+def create_color_grid(rgb_values):
+  """
+  Creates a 16x16 grid of colored boxes based on RGB values.
+
+  Args:
+    rgb_values: A list of 256 RGB tuples, each tuple representing (R, G, B) values (0-255).
+
+  Returns:
+    A matplotlib figure object displaying the color grid.
+  """
+
+
+  if len(rgb_values) != 256:
+      raise ValueError("Exactly 256 RGB values are required.")
+
+  # Create a figure and axes
+  fig, ax = plt.subplots(figsize=(8, 8))  # Adjust figure size if needed
+
+  # Set axis limits and remove ticks and labels
+  ax.set_xlim(0, 16)
+  ax.set_ylim(0, 16)
+  ax.set_xticks([])
+  ax.set_yticks([])
+
+
+  # Iterate through RGB values and create boxes
+  for i in range(16):
+      for j in range(16):
+          index = i * 16 + j
+          color = rgb_values[index]  # Assuming rgb_values contains 256 entries
+
+          # Create a rectangle patch with the specified color
+          rect = patches.Rectangle((j, 15-i), 1, 1, linewidth=0, facecolor=tuple(np.array(color)/255))
+
+          # Add the rectangle patch to the axes
+          ax.add_patch(rect)
+
+  # Display the grid
+  plt.show()
+
+  return fig
+
+
+# Example usage: Generate 256 random RGB values
+----------------------------------------------------------------------------------------
+# prompt: write a code that does the following
+# 1. Accepts a audio file
+# 2. Divides the audio into 256 equally sized segements
+# 3. Calculates the average amplitude of each segement [let that average amplitude be x]
+# 4. Generates a tuple of 3 numbers (x, x/2, x/4) for each segment
+# 5. Goes through all the generated tuples and its numbers and normalizes all the values so that all the values fall into the range of 0-255
+# 6. rounds off the values to the nearest integer by still being within the range of 0-255
+
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+from PIL import Image
+import numpy as np
+import librosa
+
+def create_color_grid(rgb_values):
+  """
+  Creates a 16x16 grid of colored boxes based on RGB values.
+
+  Args:
+    rgb_values: A list of 256 RGB tuples, each tuple representing (R, G, B) values (0-255).
+
+  Returns:
+    A matplotlib figure object displaying the color grid.
+  """
+
+
+  if len(rgb_values) != 1024:
+      raise ValueError("Exactly 256 RGB values are required.")
+
+  # Create a figure and axes
+  fig, ax = plt.subplots(figsize=(8, 8))  # Adjust figure size if needed
+
+  # Set axis limits and remove ticks and labels
+  ax.set_xlim(0, 32)
+  ax.set_ylim(0, 32)
+  ax.set_xticks([])
+  ax.set_yticks([])
+
+
+  # Iterate through RGB values and create boxes
+  for i in range(32):
+      for j in range(32):
+          index = i * 32 + j
+          color = rgb_values[index]  # Assuming rgb_values contains 256 entries
+
+          # Create a rectangle patch with the specified color
+          rect = patches.Rectangle((j, 31-i), 1, 1, linewidth=0, facecolor=tuple(np.array(color)/255))
+
+          # Add the rectangle patch to the axes
+          ax.add_patch(rect)
+
+  # Display the grid
+  plt.show()
+
+  return fig
+
+def process_audio(file_path):
+    # 1. Load audio file
+    try:
+        y, sr = librosa.load(file_path)
+    except FileNotFoundError:
+        print(f"Error: Audio file not found at {file_path}")
+        return None
+
+    # 2. Divide into segments
+    segment_length = len(y) // 1024
+    segments = [y[i * segment_length:(i + 1) * segment_length] for i in range(1024)]
+
+    # 3 & 4. Calculate average amplitude and generate tuples
+    tuples = []
+    for segment in segments:
+        avg_amplitude = np.mean(np.abs(segment))
+        tuples.append((avg_amplitude, avg_amplitude, avg_amplitude))
+
+    # 5 & 6. Normalize and round
+    all_values = [val for tup in tuples for val in tup]
+    min_val = min(all_values)
+    max_val = max(all_values)
+
+    normalized_tuples = []
+    for tup in tuples:
+        normalized_tup = []
+        for val in tup:
+            normalized_val = int(round(((val - min_val) / (max_val - min_val)) * 255))
+            normalized_val = min(255, max(0, normalized_val)) # Ensure within 0-255
+            normalized_tup.append(normalized_val)
+        normalized_tuples.append(normalized_tup)
+    
+    rgb_values = normalized_tuples
+    create_color_grid(rgb_values)
+    return rgb_values
+
+
+# Example usage (replace with your audio file path)
+file_path1 = "rock.00094.wav"
+file_path2 = "rock.00095.wav"
+
+rgb_values1 = process_audio(file_path1)
+create_color_grid(rgb_values1)
+
+rgb_values2 = process_audio(file_path2)
+create_color_grid(rgb_values2)
+
+-----------------------------------------------------------------------------------------
+# prompt: write a code that generates these grids for all the audio files uploaded in the 'blues' folder
+
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+from PIL import Image
+import numpy as np
+import librosa
+import os
+
+def create_color_grid(rgb_values):
+    """
+    Creates a 32x32 grid of colored boxes based on RGB values.
+    """
+    if len(rgb_values) != 1024:
+        raise ValueError("Exactly 1024 RGB values are required.")
+
+    fig, ax = plt.subplots(figsize=(8, 8))
+    ax.set_xlim(0, 32)
+    ax.set_ylim(0, 32)
+    ax.set_xticks([])
+    ax.set_yticks([])
+
+    for i in range(32):
+        for j in range(32):
+            index = i * 32 + j
+            color = rgb_values[index]
+            rect = patches.Rectangle((j, 31-i), 1, 1, linewidth=0, facecolor=tuple(np.array(color)/255))
+            ax.add_patch(rect)
+
+    plt.show()
+    return fig
+
+def process_audio(file_path):
+    try:
+        y, sr = librosa.load(file_path)
+    except FileNotFoundError:
+        print(f"Error: Audio file not found at {file_path}")
+        return None
+    
+    segment_length = len(y) // 1024
+    segments = [y[i * segment_length:(i + 1) * segment_length] for i in range(1024)]
+
+    tuples = []
+    for segment in segments:
+        avg_amplitude = np.mean(np.abs(segment))
+        tuples.append((avg_amplitude, avg_amplitude, avg_amplitude))
+
+    all_values = [val for tup in tuples for val in tup]
+    min_val = min(all_values)
+    max_val = max(all_values)
+
+    normalized_tuples = []
+    for tup in tuples:
+        normalized_tup = []
+        for val in tup:
+            normalized_val = int(round(((val - min_val) / (max_val - min_val)) * 255))
+            normalized_val = min(255, max(0, normalized_val))
+            normalized_tup.append(normalized_val)
+        normalized_tuples.append(normalized_tup)
+    
+    rgb_values = normalized_tuples
+    create_color_grid(rgb_values)
+    return rgb_values
+
+# Assuming 'blues' folder is in the current working directory
+blues_folder = "blues"  # Replace with the actual path to your 'blues' folder if different
+
+if not os.path.exists(blues_folder):
+    print(f"Error: '{blues_folder}' folder not found.")
+else:
+    for filename in os.listdir(blues_folder):
+        if filename.endswith(('.wav', '.mp3', '.ogg')):
+            file_path = os.path.join(blues_folder, filename)
+            print(f"Processing {filename}")
+            rgb_values = process_audio(file_path)
+            if rgb_values:
+                print(f"Finished processing {filename}")
+            else:
+                print(f"Skipping {filename} due to error")
